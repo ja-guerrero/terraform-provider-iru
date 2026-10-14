@@ -244,21 +244,28 @@ func (r *customAppResource) ImportState(ctx context.Context, req resource.Import
 }
 
 func (r *customAppResource) mapToClient(data *customAppResourceModel) client.CustomApp {
-	return client.CustomApp{
-		Name:                   data.Name.ValueString(),
-		FileKey:                data.FileKey.ValueString(),
-		InstallType:            data.InstallType.ValueString(),
-		InstallEnforcement:     data.InstallEnforcement.ValueString(),
-		UnzipLocation:          data.UnzipLocation.ValueString(),
-		AuditScript:            data.AuditScript.ValueString(),
-		PreinstallScript:       data.PreinstallScript.ValueString(),
-		PostinstallScript:      data.PostinstallScript.ValueString(),
-		ShowInSelfService:      data.ShowInSelfService.ValueBool(),
-		SelfServiceCategoryID:  data.SelfServiceCategoryID.ValueString(),
-		SelfServiceRecommended: data.SelfServiceRecommended.ValueBool(),
-		Active:                 data.Active.ValueBool(),
-		Restart:                data.Restart.ValueBool(),
+	app := client.CustomApp{
+		Name:                  data.Name.ValueString(),
+		FileKey:               data.FileKey.ValueString(),
+		InstallType:           data.InstallType.ValueString(),
+		InstallEnforcement:    data.InstallEnforcement.ValueString(),
+		UnzipLocation:         data.UnzipLocation.ValueString(),
+		AuditScript:           data.AuditScript.ValueString(),
+		PreinstallScript:      data.PreinstallScript.ValueString(),
+		PostinstallScript:     data.PostinstallScript.ValueString(),
+		ShowInSelfService:     data.ShowInSelfService.ValueBool(),
+		SelfServiceCategoryID: data.SelfServiceCategoryID.ValueString(),
+		Active:                data.Active.ValueBool(),
+		Restart:               data.Restart.ValueBool(),
 	}
+
+	// Iru rejects self_service_recommended unless the app is in Self Service,
+	// so only send it when self service is enabled and the value is known.
+	if data.ShowInSelfService.ValueBool() && !data.SelfServiceRecommended.IsNull() && !data.SelfServiceRecommended.IsUnknown() {
+		app.SelfServiceRecommended = data.SelfServiceRecommended.ValueBoolPointer()
+	}
+
+	return app
 }
 
 func (r *customAppResource) mapFromClient(data *customAppResourceModel, resp *client.CustomApp) {
@@ -273,7 +280,8 @@ func (r *customAppResource) mapFromClient(data *customAppResourceModel, resp *cl
 	data.PostinstallScript = types.StringValue(resp.PostinstallScript)
 	data.ShowInSelfService = types.BoolValue(resp.ShowInSelfService)
 	data.SelfServiceCategoryID = types.StringValue(resp.SelfServiceCategoryID)
-	data.SelfServiceRecommended = types.BoolValue(resp.SelfServiceRecommended)
+	// Iru omits self_service_recommended for apps not in Self Service.
+	data.SelfServiceRecommended = types.BoolValue(resp.SelfServiceRecommended != nil && *resp.SelfServiceRecommended)
 	data.Active = types.BoolValue(resp.Active)
 	data.Restart = types.BoolValue(resp.Restart)
 }
