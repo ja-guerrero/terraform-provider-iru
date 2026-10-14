@@ -165,7 +165,7 @@ type CustomApp struct {
 	PostinstallScript      string `json:"postinstall_script,omitempty"`
 	ShowInSelfService      bool   `json:"show_in_self_service"`
 	SelfServiceCategoryID  string `json:"self_service_category_id,omitempty"`
-	SelfServiceRecommended bool   `json:"self_service_recommended"`
+	SelfServiceRecommended *bool  `json:"self_service_recommended,omitempty"`
 	Active                 bool   `json:"active"`
 	Restart                bool   `json:"restart"`
 }

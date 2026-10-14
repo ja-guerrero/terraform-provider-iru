@@ -83,7 +83,7 @@ func (r *customAppListResource) List(ctx context.Context, req list.ListRequest, 
 				PostinstallScript:      types.StringValue(app.PostinstallScript),
 				ShowInSelfService:      types.BoolValue(app.ShowInSelfService),
 				SelfServiceCategoryID:  types.StringValue(app.SelfServiceCategoryID),
-				SelfServiceRecommended: types.BoolValue(app.SelfServiceRecommended),
+				SelfServiceRecommended: types.BoolValue(app.SelfServiceRecommended != nil && *app.SelfServiceRecommended),
 				Active:                 types.BoolValue(app.Active),
 				Restart:                types.BoolValue(app.Restart),
 			}
